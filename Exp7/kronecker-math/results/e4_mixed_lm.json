@@ -1,0 +1,108 @@
+{
+  "steps": 8000,
+  "batch": 384,
+  "eval_n": 15000,
+  "device": "mps",
+  "payload": 85085,
+  "words": [
+    "add",
+    "and",
+    "away",
+    "between",
+    "by",
+    "comes",
+    "difference",
+    "equals",
+    "from",
+    "get",
+    "have",
+    "is",
+    "lots",
+    "makes",
+    "minus",
+    "multiply",
+    "of",
+    "plus",
+    "product",
+    "subtract",
+    "sum",
+    "take",
+    "the",
+    "times",
+    "to",
+    "total",
+    "you"
+  ],
+  "templates": {
+    "add": [
+      "the total of {A} and {B} is",
+      "{A} plus {B} equals",
+      "add {A} to {B} and you get",
+      "the sum of {A} and {B} comes to"
+    ],
+    "sub": [
+      "subtract {B} from {A} to get",
+      "{A} minus {B} equals",
+      "the difference between {A} and {B} is",
+      "take {B} away from {A} and you have"
+    ],
+    "mul": [
+      "the product of {A} and {B} is",
+      "{A} times {B} equals",
+      "multiply {A} by {B} and you get",
+      "{A} lots of {B} makes"
+    ]
+  },
+  "ranges": {
+    "add": [
+      0,
+      10000,
+      10000,
+      40001
+    ],
+    "sub": [
+      0,
+      10000,
+      10000,
+      40001
+    ],
+    "mul": [
+      0,
+      200,
+      200,
+      292
+    ]
+  },
+  "arms": [
+    {
+      "arm": "kron_only",
+      "params": 1363427,
+      "seconds": 74.6,
+      "acc_in_dist": 0.0044,
+      "rmse_in_dist": 0.6204156875610352,
+      "acc_in_dist_add": 0.0,
+      "acc_in_dist_sub": 0.0,
+      "acc_in_dist_mul": 0.013221153846153846,
+      "acc_ood": 6.666666666666667e-05,
+      "rmse_ood": 0.6483569741249084,
+      "acc_ood_add": 0.0,
+      "acc_ood_sub": 0.00019474196689386563,
+      "acc_ood_mul": 0.0
+    },
+    {
+      "arm": "kron_math",
+      "params": 1363427,
+      "seconds": 81.4,
+      "acc_in_dist": 1.0,
+      "rmse_in_dist": 0.031151024624705315,
+      "acc_in_dist_add": 1.0,
+      "acc_in_dist_sub": 1.0,
+      "acc_in_dist_mul": 1.0,
+      "acc_ood": 0.9979333333333333,
+      "rmse_ood": 0.07577592134475708,
+      "acc_ood_add": 1.0,
+      "acc_ood_sub": 1.0,
+      "acc_ood_mul": 0.9937094155844156
+    }
+  ]
+}

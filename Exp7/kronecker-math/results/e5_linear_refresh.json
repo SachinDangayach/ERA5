@@ -1,0 +1,25 @@
+{
+  "primes": [
+    5,
+    7,
+    11,
+    13,
+    17,
+    19,
+    23
+  ],
+  "dim_linear": 373,
+  "dim_compact": 35,
+  "modulus": 37182145,
+  "n": 20000,
+  "acc_add": 1.0,
+  "acc_mul": 1.0,
+  "acc_mul_with_zeros": 1.0,
+  "max_abs_err_add": 3.2307490016592055e-14,
+  "max_abs_err_mul": 2.708944180085382e-14,
+  "linearity_violation": {
+    "refresh_from_add": 3.552713678800501e-15,
+    "refresh_from_mul": 5.329070518200751e-15
+  },
+  "all_passed": true
+}

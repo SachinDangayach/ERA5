@@ -1,0 +1,144 @@
+{
+  "codec": "MathCodec(primes=(5, 7, 11, 13, 17, 19, 23), dim=35, range=[0, 37182145))",
+  "primes": [
+    5,
+    7,
+    11,
+    13,
+    17,
+    19,
+    23
+  ],
+  "dim": 35,
+  "modulus": 37182145,
+  "n_trials": 200000,
+  "add_worst_margin": 3.1086244689504383e-15,
+  "add_raw_max_abs_err": 1.942890293094024e-15,
+  "mul_worst_margin": 3.1086244689504383e-15,
+  "mul_raw_max_abs_err_live": 1.8318679906315083e-15,
+  "invertible_divisor_fraction": 0.488745,
+  "noninvertible_detected": 1.0,
+  "round_trip": {
+    "a + b": {
+      "pairs": 200000,
+      "max_slot_diff": 0.0,
+      "identical": 200000
+    },
+    "a - b": {
+      "pairs": 200000,
+      "max_slot_diff": 0.0,
+      "identical": 200000
+    },
+    "a * b": {
+      "pairs": 200000,
+      "max_slot_diff": 0.0,
+      "identical": 200000
+    },
+    "a / b": {
+      "pairs": 98374,
+      "max_slot_diff": 0.0,
+      "identical": 98374
+    }
+  },
+  "rational_denominator_coverage": 0.96,
+  "checks": [
+    {
+      "name": "random pairs, full range",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "random pairs, 0..999",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "random pairs, full range",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "random pairs, 0..999",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "with zero operands",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "subtraction (signed)",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "integer power  a ** 2",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "integer power  a ** 3",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "integer power  a ** 4",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "exact division, invertible divisor",
+      "correct": 97749,
+      "total": 97749,
+      "accuracy": 1.0
+    },
+    {
+      "name": "4-step expression",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "round trip a + b",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "round trip a - b",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "round trip a * b",
+      "correct": 200000,
+      "total": 200000,
+      "accuracy": 1.0
+    },
+    {
+      "name": "round trip a / b",
+      "correct": 98374,
+      "total": 98374,
+      "accuracy": 1.0
+    },
+    {
+      "name": "rational arithmetic",
+      "correct": 20000,
+      "total": 20000,
+      "accuracy": 1.0
+    }
+  ],
+  "seconds": 15.81,
+  "overall_accuracy": 1.0
+}

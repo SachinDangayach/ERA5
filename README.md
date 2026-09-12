@@ -7,6 +7,7 @@ Experiment log for fine-tuning a model. Each `ExpN/` folder is a self-contained 
 | # | Folder | Focus | Status |
 |---|--------|-------|--------|
 | 1 | [Exp1](Exp1/README.md) | Why activations matter — four in-browser proofs (nonlinearity, depth without nonlinearity, embeddings from next-token prediction, memorization vs. generalization) | Done |
+| 7 | [Exp7](Exp7/kronecker-math/README.md) | Mathematical structure inside the embedding — 35 appended dimensions that make `9 ⊗ 9` decode to 81 with zero parameters, plus transformers that generalize past their training range | Done |
 
 ## Conventions
 

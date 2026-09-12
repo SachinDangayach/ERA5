@@ -1,0 +1,66 @@
+{
+  "task": "mul",
+  "op": "*",
+  "train_range": [
+    0,
+    200
+  ],
+  "ood_range": [
+    200,
+    292
+  ],
+  "steps": 6000,
+  "batch": 512,
+  "eval_n": 20000,
+  "device": "mps",
+  "payload": 85085,
+  "zero_shot_ood": 1.0,
+  "arms": [
+    {
+      "arm": "A_digit_baseline",
+      "params": 408124,
+      "seconds": 33.0,
+      "final_loss": 0.32793042063713074,
+      "acc_in_dist": 0.3142,
+      "acc_ood": 0.0
+    },
+    {
+      "arm": "B_kron_only__block",
+      "params": 414755,
+      "seconds": 28.6,
+      "final_loss": 0.28808262944221497,
+      "acc_in_dist": 0.03665,
+      "block_rmse_in_dist": 0.5380739997207682,
+      "acc_ood": 0.0,
+      "block_rmse_ood": 0.7221351629698524
+    },
+    {
+      "arm": "C_kron_math__block",
+      "params": 414755,
+      "seconds": 28.3,
+      "final_loss": 0.00033851663465611637,
+      "acc_in_dist": 1.0,
+      "block_rmse_in_dist": 0.018338560138199962,
+      "acc_ood": 0.9994,
+      "block_rmse_ood": 0.09782492925910942
+    },
+    {
+      "arm": "D_kron_math__residue",
+      "params": 422495,
+      "seconds": 32.6,
+      "final_loss": 0.00035860962816514075,
+      "acc_in_dist": 1.0,
+      "acc_ood": 0.9967
+    },
+    {
+      "arm": "F_kron_math__digits",
+      "params": 417980,
+      "seconds": 30.9,
+      "final_loss": 0.0005409754230640829,
+      "acc_in_dist": 1.0,
+      "acc_ood": 0.0
+    }
+  ],
+  "d_model": 128,
+  "nlayers": 2
+}
