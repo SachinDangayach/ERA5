@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S1-1 · Activations exist for a reason</title>
+<style>
+  :root {
+    --board: #f5f6f1;
+    --board-edge: #fcfcfb;
+    --panel: #ffffff;
+    --panel-2: #eff0ea;
+    --chalk: #182019;
+    --chalk-dim: #57615a;
+    --chalk-faint: #8b948c;
+    --accent: #9c5b00;
+    --accent-dim: #c9a467;
+    --class0: #2a78d6;
+    --class1: #e34948;
+    --cat-animal: #1baf7a;
+    --cat-fruit: #eda100;
+    --cat-verb: #4a3aa7;
+    --train: #1baf7a;
+    --test: #4a3aa7;
+    --line: rgba(24, 32, 25, 0.14);
+    --line-soft: rgba(24, 32, 25, 0.07);
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--board);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(42,120,214,0.05), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(24,32,25,0.035) 0px, rgba(24,32,25,0.035) 1px, transparent 1px, transparent 96px),
+      repeating-linear-gradient(90deg, rgba(24,32,25,0.035) 0px, rgba(24,32,25,0.035) 1px, transparent 1px, transparent 96px);
+    color: var(--chalk);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .board {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 28px 64px;
+  }
+
+  /* ---------- header ---------- */
+  .masthead { margin-bottom: 28px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    margin: 0 0 10px;
+    text-wrap: balance;
+    color: var(--chalk);
+  }
+
+  .sub {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--chalk-dim);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  /* ---------- tabs ---------- */
+  nav.tabs {
+    display: flex;
+    gap: 8px;
+    margin: 30px 0 0;
+    border-bottom: 2px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: var(--panel-2);
+    border: 1.5px solid var(--line-soft);
+    border-bottom: 2px solid transparent;
+    color: var(--chalk-faint);
+    padding: 13px 22px;
+    cursor: pointer;
+    position: relative;
+    border-radius: 10px 10px 0 0;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .tab:hover { background: var(--panel); color: var(--chalk-dim); border-color: var(--line); }
+
+  .tab[aria-selected="true"] {
+    background: var(--panel);
+    color: var(--chalk);
+    font-weight: 700;
+    border-color: var(--line);
+    border-bottom: 2px solid var(--panel);
+    margin-bottom: -2px;
+    box-shadow: inset 0 3px 0 var(--accent);
+  }
+
+  .tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- panel layout ---------- */
+  .panel { display: none; }
+  .panel.is-active { display: block; }
+
+  .proof-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-top: 26px;
+  }
+
+  @media (max-width: 880px) {
+    .proof-grid { grid-template-columns: 1fr; }
+  }
+
+  .rail { display: flex; flex-direction: column; gap: 14px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .card .label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+
+  .card p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--chalk-dim);
+  }
+
+  .card p strong { color: var(--chalk); font-weight: 600; }
+
+  .card.proof-card .stat-row {
+    display: flex;
+    gap: 18px;
+    margin: 12px 0 14px;
+  }
+
+  .mini-stat .n {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    color: var(--chalk);
+    display: block;
+  }
+  .mini-stat.win .n { color: var(--accent); }
+  .mini-stat .k {
+    font-size: 10.5px;
+    color: var(--chalk-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  button.retrain {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--chalk);
+    padding: 10px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  button.retrain:hover { border-color: var(--accent-dim); color: var(--accent); }
+  button.retrain:active { transform: translateY(1px); }
+  button.retrain:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.retrain[disabled] { opacity: 0.55; cursor: default; }
+
+  .seed-note {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--chalk-faint);
+  }
+
+  /* ---------- stage ---------- */
+  .stage { display: flex; flex-direction: column; gap: 16px; }
+
+  .plot-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 640px) {
+    .plot-pair { grid-template-columns: 1fr; }
+  }
+
+  .plot-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 14px 16px;
+  }
+
+  .plot-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .plot-head h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 15.5px;
+    margin: 0;
+    color: var(--chalk);
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--chalk-faint);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line-soft);
+    background: var(--board-edge);
+  }
+
+  canvas { display: block; width: 100%; height: 100%; }
+
+  .plot-foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+
+  .acc {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    color: var(--chalk);
+  }
+  .acc.hi { color: var(--accent); }
+
+  .verdict {
+    font-size: 12px;
+    color: var(--chalk-faint);
+    text-align: right;
+    max-width: 14ch;
+    line-height: 1.4;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--chalk-dim);
+    padding: 2px 4px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .swatch {
+    width: 10px; height: 10px; border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(24,32,25,0.3);
+  }
+  .swatch.c0 { background: var(--class0); }
+  .swatch.c1 { background: var(--class1); }
+  .swatch.seam {
+    width: 14px; height: 10px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--class0), var(--board-edge) 48%, var(--board-edge) 52%, var(--class1));
+    box-shadow: none;
+  }
+
+  .takeaway {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--chalk);
+    background: linear-gradient(180deg, transparent, rgba(156,91,0,0.06));
+    border-top: 1px dashed var(--line);
+    padding: 14px 4px 2px;
+    margin-top: 4px;
+  }
+  .takeaway em {
+    color: var(--accent);
+    font-style: normal;
+    border-bottom: 1px dotted var(--accent-dim);
+  }
+
+  /* ---------- 3-up plot layout (S1-2, S1-4) ---------- */
+  .plot-trio {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .plot-trio { grid-template-columns: 1fr; }
+  }
+  .plot-trio .plot-card .canvas-wrap { aspect-ratio: 1 / 1; }
+
+  .stat-row.trio { flex-wrap: wrap; }
+  .stat-row .mini-stat { min-width: 58px; }
+
+  /* ---------- matrix proof (S1-2 bonus) ---------- */
+  .matrix-proof {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 22px;
+    margin-top: 2px;
+  }
+  .matrix-block { display: flex; flex-direction: column; gap: 6px; }
+  .matrix-block .matrix-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--chalk-faint);
+  }
+  .matrix-vec {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chalk);
+    letter-spacing: 0.02em;
+  }
+  .matrix-vec .b { color: var(--accent); font-size: 20px; margin: 0 2px; }
+  .matrix-equals { font-family: var(--serif); font-size: 20px; color: var(--chalk-faint); }
+  .matrix-cosine {
+    margin-left: auto;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--chalk-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .matrix-cosine strong {
+    display: block;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0;
+    text-transform: none;
+    margin-top: 2px;
+  }
+
+  /* ---------- embedding stage (S1-3) ---------- */
+  .stage-embed {
+    display: grid;
+    grid-template-columns: 1fr 250px;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .stage-embed { grid-template-columns: 1fr; }
+  }
+  .stage-embed .canvas-wrap { aspect-ratio: 4 / 3; }
+
+  .nn-table {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nn-table .nn-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chalk-faint);
+    margin: 0 0 8px;
+  }
+  .nn-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    border-top: 1px solid var(--line-soft);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .nn-row:first-of-type { border-top: none; }
+  .nn-row .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .nn-row .tok { color: var(--chalk); min-width: 44px; }
+  .nn-row .arrow { color: var(--chalk-faint); }
+  .nn-row .nbr { color: var(--chalk-dim); }
+  .nn-row .mark { margin-left: auto; color: var(--accent); }
+
+  /* ---------- gap bar chart (S1-4) ---------- */
+  .gapchart {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px 14px;
+  }
+  .gapchart-bars {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 150px;
+    border-bottom: 1px solid var(--line);
+    padding: 0 8px;
+  }
+  .gap-group { display: flex; flex-direction: column; align-items: center; }
+  .gap-bars { display: flex; align-items: flex-end; gap: 7px; height: 130px; }
+  .gap-bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .gap-bar-val {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--chalk-dim);
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .gap-bar {
+    width: 22px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s ease;
+  }
+  .gap-bar.train { background: var(--train); }
+  .gap-bar.test { background: var(--test); }
+  .gap-group .gf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    margin-top: 8px;
+    font-family: var(--mono);
+  }
+  .gap-group .gf .n-label { font-size: 11.5px; color: var(--chalk-dim); }
+  .gap-group .gf .gap-val { font-size: 12.5px; color: var(--accent); }
+
+  .swatch.animal { background: var(--cat-animal); }
+  .swatch.fruit { background: var(--cat-fruit); }
+  .swatch.verb { background: var(--cat-verb); }
+  .swatch.train { background: var(--train); }
+  .swatch.test { background: var(--test); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="board">
+  <header class="masthead">
+    <p class="eyebrow">ERA5 · Session 1 · proofs, drawn live</p>
+    <h1>Activations exist for a reason.</h1>
+    <p class="sub">Four claims about why deep nets need the pieces they have. Each tab trains real models in your browser and shows you the picture, not just the number.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Proofs">
+    <button class="tab" role="tab" id="tabbtn-1" aria-controls="panel-1" aria-selected="true">S1-1 · Activations</button>
+    <button class="tab" role="tab" id="tabbtn-2" aria-controls="panel-2" aria-selected="false">S1-2 · Depth without ReLU</button>
+    <button class="tab" role="tab" id="tabbtn-3" aria-controls="panel-3" aria-selected="false">S1-3 · Embeddings</button>
+    <button class="tab" role="tab" id="tabbtn-4" aria-controls="panel-4" aria-selected="false">S1-4 · Generalization</button>
+  </nav>
+
+  <!-- ================= PANEL 1 ================= -->
+  <section class="panel is-active" id="panel-1" role="tabpanel" aria-labelledby="tabbtn-1">
+    <div class="proof-grid">
+      <aside class="rail">
+        <div class="card">
+          <p class="label">Claim</p>
+          <p>A model with no nonlinearity can only ever draw a <strong>straight boundary</strong>. It cannot separate two rings, one inside the other, no matter how it's trained.</p>
+        </div>
+        <div class="card">
+          <p class="label">Build</p>
+          <p>300 noisy 2D points: an inner ring (<strong>class 0</strong>) and a concentric outer ring (<strong>class 1</strong>). Not linearly separable by construction. Two models see the identical data — <strong>(a)</strong> one linear layer + sigmoid, <strong>(b)</strong> the same layer with a ReLU hidden layer inserted before it.</p>
+        </div>
+        <div class="card proof-card">
+          <p class="label">Proof</p>
+          <div class="stat-row">
+            <div class="mini-stat">
+              <span class="n" id="rail-acc-lin">–</span>
+              <span class="k">linear</span>
+            </div>
+            <div class="mini-stat win">
+              <span class="n" id="rail-acc-mlp">–</span>
+              <span class="k">+ ReLU</span>
+            </div>
+          </div>
+          <p>Same data, same optimizer, same epochs. <strong>Only the activation changes</strong> between the two runs below.</p>
+          <button class="retrain" id="retrain-btn" type="button">↻ Regenerate rings &amp; retrain</button>
+          <p class="seed-note" id="seed-note">seed #1 · trained in your browser</p>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="plot-pair">
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>(a) Linear + sigmoid</h3>
+              <span class="tag">no activation</span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="canvas-linear" aria-label="Decision boundary of the linear model, a straight line cutting through the concentric rings"></canvas>
+            </div>
+            <div class="plot-foot">
+              <span class="acc" id="acc-linear">–</span>
+              <span class="verdict">stuck near chance</span>
+            </div>
+          </div>
+
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>(b) + ReLU hidden layer</h3>
+              <span class="tag">12 hidden units</span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="canvas-mlp" aria-label="Decision boundary of the ReLU network, a closed curve that wraps the inner ring"></canvas>
+            </div>
+            <div class="plot-foot">
+              <span class="acc hi" id="acc-mlp">–</span>
+              <span class="verdict">wraps the ring</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-row">
+          <span class="legend-item"><span class="swatch c0"></span>class 0 · inner ring</span>
+          <span class="legend-item"><span class="swatch c1"></span>class 1 · outer ring</span>
+          <span class="legend-item"><span class="swatch seam"></span>predicted boundary (p = 0.5 seam)</span>
+        </div>
+
+        <p class="takeaway">The boundary picture is the money shot: a straight cut through a ring gets roughly half the points by luck, <em>~55%</em>. Add one ReLU layer — no new data, no new features — and the same optimizer bends that cut into a closed curve, <em>~99%</em>. Only the activation changed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PANEL 2 : S1-2 Depth without nonlinearity ================= -->
+  <section class="panel" id="panel-2" role="tabpanel" aria-labelledby="tabbtn-2">
+    <div class="proof-grid">
+      <aside class="rail">
+        <div class="card">
+          <p class="label">Claim</p>
+          <p>Stack five linear layers and you still have <strong>one linear map</strong> — composition of linear functions is linear. A 5-layer net with no activation is exactly as strong as 1 layer, and just as unable to split the rings.</p>
+        </div>
+        <div class="card">
+          <p class="label">Build</p>
+          <p>The same ring data as S1-1, seen by three models: <strong>(a)</strong> 1 linear layer, <strong>(b)</strong> 5 stacked linear layers with no activation between them, <strong>(c)</strong> the same 5 layers with a ReLU inserted after each hidden one.</p>
+        </div>
+        <div class="card proof-card">
+          <p class="label">Proof</p>
+          <div class="stat-row trio">
+            <div class="mini-stat">
+              <span class="n" id="s2-rail-1l">–</span>
+              <span class="k">1 layer</span>
+            </div>
+            <div class="mini-stat">
+              <span class="n" id="s2-rail-5l">–</span>
+              <span class="k">5 linear</span>
+            </div>
+            <div class="mini-stat win">
+              <span class="n" id="s2-rail-5r">–</span>
+              <span class="k">+ ReLU</span>
+            </div>
+          </div>
+          <p>The 1-layer and 5-linear-layer accuracies match to the decimal — and multiplying the five weight matrices back together returns the 1-layer weights.</p>
+          <button class="retrain" id="s2-retrain-btn" type="button">↻ Regenerate rings &amp; retrain</button>
+          <p class="seed-note" id="s2-seed-note">not yet trained</p>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="plot-trio">
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>(a) 1 layer</h3>
+              <span class="tag">no activation</span>
+            </div>
+            <div class="canvas-wrap"><canvas id="s2-canvas-1l" aria-label="Decision boundary of the single linear layer, a straight line"></canvas></div>
+            <div class="plot-foot"><span class="acc" id="s2-acc-1l">–</span><span class="verdict">straight line</span></div>
+          </div>
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>(b) 5 layers, linear</h3>
+              <span class="tag">no activation</span>
+            </div>
+            <div class="canvas-wrap"><canvas id="s2-canvas-5l" aria-label="Decision boundary of five stacked linear layers, still a straight line, identical to the 1-layer model"></canvas></div>
+            <div class="plot-foot"><span class="acc" id="s2-acc-5l">–</span><span class="verdict">same straight line</span></div>
+          </div>
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>(c) 5 layers + ReLU</h3>
+              <span class="tag">4 ReLUs</span>
+            </div>
+            <div class="canvas-wrap"><canvas id="s2-canvas-5r" aria-label="Decision boundary of the five ReLU layers, a closed curve wrapping the inner ring"></canvas></div>
+            <div class="plot-foot"><span class="acc hi" id="s2-acc-5r">–</span><span class="verdict">wraps the ring</span></div>
+          </div>
+        </div>
+
+        <div class="legend-row">
+          <span class="legend-item"><span class="swatch c0"></span>class 0 · inner ring</span>
+          <span class="legend-item"><span class="swatch c1"></span>class 1 · outer ring</span>
+        </div>
+
+        <div class="matrix-proof">
+          <div class="matrix-block">
+            <span class="matrix-label">1-layer learned weights</span>
+            <span class="matrix-vec" id="s2-mat-1l"><span class="b">[</span> – – <span class="b">]</span></span>
+          </div>
+          <span class="matrix-equals">≈</span>
+          <div class="matrix-block">
+            <span class="matrix-label">W₅ · W₄ · W₃ · W₂ · W₁ (multiplied out)</span>
+            <span class="matrix-vec" id="s2-mat-5l"><span class="b">[</span> – – <span class="b">]</span></span>
+          </div>
+          <div class="matrix-cosine">cosine similarity<strong id="s2-cosine">–</strong></div>
+        </div>
+
+        <p class="takeaway">Five linear layers multiply down to <em>one matrix</em> — literally, above. Same data, same optimizer, and the 1-layer and 5-linear-layer boundaries are indistinguishable. Insert a ReLU between each pair of layers and depth suddenly starts doing work: the ring gets solved.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PANEL 3 : S1-3 Embeddings ================= -->
+  <section class="panel" id="panel-3" role="tabpanel" aria-labelledby="tabbtn-3">
+    <div class="proof-grid">
+      <aside class="rail">
+        <div class="card">
+          <p class="label">Claim</p>
+          <p>Train an embedding table on nothing but "predict the next token" and tokens that <strong>behave alike start to look alike</strong> — even though category was never a training signal.</p>
+        </div>
+        <div class="card">
+          <p class="label">Build</p>
+          <p>A toy grammar over 8 tokens — animals (<strong>cat, dog, cow</strong>), fruits (<strong>apple, mango</strong>), verbs (<strong>eat, chase, see</strong>) — generating sentences like "cat chase dog" and "cow eat mango". An 8-dim embedding table feeds a softmax over the vocabulary, trained only to predict the next token in the stream.</p>
+        </div>
+        <div class="card proof-card">
+          <p class="label">Proof</p>
+          <div class="stat-row">
+            <div class="mini-stat win">
+              <span class="n" id="s3-rail-nn">–</span>
+              <span class="k">same-category NN</span>
+            </div>
+          </div>
+          <p>Project the 8 learned embeddings to 2D (PCA) and the three categories separate into three regions — no category label was ever shown to the model.</p>
+          <button class="retrain" id="s3-retrain-btn" type="button">↻ Resample grammar &amp; retrain</button>
+          <p class="seed-note" id="s3-seed-note">not yet trained</p>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="stage-embed">
+          <div class="plot-card">
+            <div class="plot-head">
+              <h3>Embeddings, projected to 2D</h3>
+              <span class="tag">8 tokens · d=8 → PCA(2)</span>
+            </div>
+            <div class="canvas-wrap"><canvas id="s3-canvas" aria-label="2D projection of learned token embeddings, showing animal, fruit, and verb tokens clustered by category"></canvas></div>
+            <div class="legend-row">
+              <span class="legend-item"><span class="swatch animal"></span>animals</span>
+              <span class="legend-item"><span class="swatch fruit"></span>fruits</span>
+              <span class="legend-item"><span class="swatch verb"></span>verbs</span>
+            </div>
+          </div>
+          <div class="nn-table">
+            <p class="nn-title">Nearest neighbor, by cosine</p>
+            <div id="s3-nn-rows"></div>
+          </div>
+        </div>
+
+        <p class="takeaway">Nobody told the model that cat and dog are alike. It only ever saw <em>"predict the next word."</em> Same-category tokens land near each other because they play the same distributional role in the grammar — that's the whole idea behind word embeddings.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PANEL 4 : S1-4 Memorization vs generalization ================= -->
+  <section class="panel" id="panel-4" role="tabpanel" aria-labelledby="tabbtn-4">
+    <div class="proof-grid">
+      <aside class="rail">
+        <div class="card">
+          <p class="label">Claim</p>
+          <p>A high-capacity net can <strong>memorize</strong> a tiny dataset — train loss to ~0 — while doing barely better than chance held out. Give it more data at the same capacity, and that gap <strong>closes</strong>.</p>
+        </div>
+        <div class="card">
+          <p class="label">Build</p>
+          <p>A noisy 2D classification task (wiggly true boundary, 12% label noise). The same over-parameterized net (2→32→32→1, ~1,200 weights) trains from scratch at three sizes — <strong>n = 20, 200, 2000</strong> — each with its own 400-point held-out test set.</p>
+        </div>
+        <div class="card proof-card">
+          <p class="label">Proof</p>
+          <div class="stat-row trio">
+            <div class="mini-stat win">
+              <span class="n" id="s4-rail-gap20">–</span>
+              <span class="k">gap @ n=20</span>
+            </div>
+            <div class="mini-stat">
+              <span class="n" id="s4-rail-gap2000">–</span>
+              <span class="k">gap @ n=2000</span>
+            </div>
+          </div>
+          <p>Same architecture, same optimizer, same number of gradient steps at every size. Only the amount of data changes.</p>
+          <button class="retrain" id="s4-retrain-btn" type="button">↻ Resample data &amp; retrain</button>
+          <p class="seed-note" id="s4-seed-note">not yet trained</p>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="plot-trio">
+          <div class="plot-card">
+            <div class="plot-head"><h3>n = 20</h3><span class="tag">memorizes</span></div>
+            <div class="canvas-wrap"><canvas id="s4-canvas-20" aria-label="Decision boundary trained on 20 points, jagged and overfit to individual points"></canvas></div>
+            <div class="plot-foot"><span class="acc" id="s4-acc-20">–</span><span class="verdict">train≫test</span></div>
+          </div>
+          <div class="plot-card">
+            <div class="plot-head"><h3>n = 200</h3><span class="tag">gap shrinks</span></div>
+            <div class="canvas-wrap"><canvas id="s4-canvas-200" aria-label="Decision boundary trained on 200 points, smoother"></canvas></div>
+            <div class="plot-foot"><span class="acc" id="s4-acc-200">–</span><span class="verdict">closing gap</span></div>
+          </div>
+          <div class="plot-card">
+            <div class="plot-head"><h3>n = 2000</h3><span class="tag">generalizes</span></div>
+            <div class="canvas-wrap"><canvas id="s4-canvas-2000" aria-label="Decision boundary trained on 2000 points, smooth and close to the true boundary"></canvas></div>
+            <div class="plot-foot"><span class="acc hi" id="s4-acc-2000">–</span><span class="verdict">train≈test</span></div>
+          </div>
+        </div>
+
+        <div class="legend-row">
+          <span class="legend-item"><span class="swatch c0"></span>label 0</span>
+          <span class="legend-item"><span class="swatch c1"></span>label 1</span>
+          <span class="legend-item">— points shown: training set only (subsampled for n=2000)</span>
+        </div>
+
+        <div class="gapchart">
+          <div class="gapchart-bars" id="s4-gapchart"></div>
+          <div class="legend-row" style="margin-top:10px;">
+            <span class="legend-item"><span class="swatch train"></span>train accuracy</span>
+            <span class="legend-item"><span class="swatch test"></span>test accuracy</span>
+          </div>
+        </div>
+
+        <p class="takeaway">Same net, same optimizer, same number of steps — the only thing that changed across these three panels is how much data it had to fit. The gap between train and test is capacity looking for signal and finding noise instead; more data is what gives it signal to find. <em>Data is everything.</em></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- tab switching ----------
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var onFirstActivate = {}; // panelId -> fn, called once when a tab is first opened
+  tabs.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      tabs.forEach(function (b) { b.setAttribute("aria-selected", "false"); });
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("is-active"); });
+      btn.setAttribute("aria-selected", "true");
+      var panelId = btn.getAttribute("aria-controls");
+      document.getElementById(panelId).classList.add("is-active");
+      if (onFirstActivate[panelId]) {
+        var fn = onFirstActivate[panelId];
+        onFirstActivate[panelId] = null;
+        window.setTimeout(fn, 20);
+      }
+    });
+  });
+
+  // ---------- RNG ----------
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function gaussian(rng) {
+    var u = 1 - rng(), v = rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  function makeData(seed, n) {
+    n = n || 150;
+    var rng = mulberry32(seed);
+    var pts = [];
+    var i, a, r;
+    for (i = 0; i < n; i++) {
+      a = rng() * 2 * Math.PI;
+      r = 1.0 + gaussian(rng) * 0.13;
+      pts.push({ x: r * Math.cos(a), y: r * Math.sin(a), label: 0 });
+    }
+    for (i = 0; i < n; i++) {
+      a = rng() * 2 * Math.PI;
+      r = 2.4 + gaussian(rng) * 0.18;
+      pts.push({ x: r * Math.cos(a), y: r * Math.sin(a), label: 1 });
+    }
+    for (i = pts.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
+    }
+    return pts;
+  }
+
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  // ---------- linear model ----------
+  function trainLinear(data, epochs, lr) {
+    epochs = epochs || 400; lr = lr || 0.5;
+    var w1 = 0, w2 = 0, b = 0;
+    var n = data.length;
+    for (var e = 0; e < epochs; e++) {
+      var gw1 = 0, gw2 = 0, gb = 0;
+      for (var k = 0; k < n; k++) {
+        var p = data[k];
+        var z = w1 * p.x + w2 * p.y + b;
+        var err = sigmoid(z) - p.label;
+        gw1 += err * p.x; gw2 += err * p.y; gb += err;
+      }
+      w1 -= lr * gw1 / n; w2 -= lr * gw2 / n; b -= lr * gb / n;
+    }
+    var correct = 0;
+    for (var m = 0; m < n; m++) {
+      var pp = data[m];
+      var yhat = sigmoid(w1 * pp.x + w2 * pp.y + b);
+      if ((yhat >= 0.5 ? 1 : 0) === pp.label) correct++;
+    }
+    return {
+      acc: correct / n,
+      predict: function (x, y) { return sigmoid(w1 * x + w2 * y + b); }
+    };
+  }
+
+  // ---------- ReLU MLP ----------
+  function trainMLP(data, H, epochs, lr, seed) {
+    H = H || 12; epochs = epochs || 1500; lr = lr || 0.08; seed = seed || 7;
+    var rng = mulberry32(seed);
+    var rand = function () { return (rng() * 2 - 1) * Math.SQRT1_2; };
+    var W1 = [], b1 = [], W2 = [], b2 = 0, j;
+    for (j = 0; j < H; j++) { W1.push([rand(), rand()]); b1.push(0); W2.push(rand() * Math.sqrt(2 / H)); }
+    var n = data.length;
+    var mW1 = [], mb1 = [], mW2 = new Array(H).fill(0), mb2 = 0;
+    for (j = 0; j < H; j++) { mW1.push([0, 0]); mb1.push(0); }
+    var beta = 0.9;
+
+    var hraw = new Array(H), h = new Array(H);
+    for (var e = 0; e < epochs; e++) {
+      var gW1 = [], gb1 = new Array(H).fill(0), gW2 = new Array(H).fill(0), gb2 = 0;
+      for (j = 0; j < H; j++) gW1.push([0, 0]);
+
+      for (var k = 0; k < n; k++) {
+        var p = data[k];
+        for (j = 0; j < H; j++) {
+          hraw[j] = W1[j][0] * p.x + W1[j][1] * p.y + b1[j];
+          h[j] = hraw[j] > 0 ? hraw[j] : 0;
+        }
+        var z2 = b2;
+        for (j = 0; j < H; j++) z2 += W2[j] * h[j];
+        var err = sigmoid(z2) - p.label;
+
+        for (j = 0; j < H; j++) { gW2[j] += err * h[j]; }
+        gb2 += err;
+        for (j = 0; j < H; j++) {
+          var dh = err * W2[j] * (hraw[j] > 0 ? 1 : 0);
+          gW1[j][0] += dh * p.x;
+          gW1[j][1] += dh * p.y;
+          gb1[j] += dh;
+        }
+      }
+
+      for (j = 0; j < H; j++) {
+        mW2[j] = beta * mW2[j] + (1 - beta) * (gW2[j] / n);
+        W2[j] -= lr * mW2[j];
+        mW1[j][0] = beta * mW1[j][0] + (1 - beta) * (gW1[j][0] / n);
+        mW1[j][1] = beta * mW1[j][1] + (1 - beta) * (gW1[j][1] / n);
+        W1[j][0] -= lr * mW1[j][0];
+        W1[j][1] -= lr * mW1[j][1];
+        mb1[j] = beta * mb1[j] + (1 - beta) * (gb1[j] / n);
+        b1[j] -= lr * mb1[j];
+      }
+      mb2 = beta * mb2 + (1 - beta) * (gb2 / n);
+      b2 -= lr * mb2;
+    }
+
+    var predict = function (x, y) {
+      var z2 = b2;
+      for (var jj = 0; jj < H; jj++) {
+        var r = W1[jj][0] * x + W1[jj][1] * y + b1[jj];
+        z2 += W2[jj] * (r > 0 ? r : 0);
+      }
+      return sigmoid(z2);
+    };
+
+    var correct = 0;
+    for (var m = 0; m < n; m++) {
+      var pp = data[m];
+      var yhat = predict(pp.x, pp.y);
+      if ((yhat >= 0.5 ? 1 : 0) === pp.label) correct++;
+    }
+    return { acc: correct / n, predict: predict };
+  }
+
+  // ---------- rendering ----------
+  var DOMAIN = 3.35;
+  var CLASS0 = [42, 120, 214];
+  var CLASS1 = [227, 73, 72];
+  var GRID_N = 76;
+
+  // opts: { domain, gridN, maxPoints }  — defaults match the S1-1 ring plots
+  function drawPlot(canvas, data, model, opts) {
+    opts = opts || {};
+    var domain = opts.domain || DOMAIN;
+    var gridN = opts.gridN || GRID_N;
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var size = Math.max(1, Math.round(rect.width));
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    var ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+
+    function toPx(v) { return ((v + domain) / (2 * domain)) * size; }
+    function toData(px) { return (px / size) * (2 * domain) - domain; }
+
+    // probability field shading
+    var cell = size / gridN;
+    for (var gy = 0; gy < gridN; gy++) {
+      var dy = toData(gy * cell + cell / 2);
+      for (var gx = 0; gx < gridN; gx++) {
+        var dx = toData(gx * cell + cell / 2);
+        var pr = model.predict(dx, dy);
+        var conf = Math.abs(pr - 0.5) * 2;
+        var alpha = 0.08 + 0.5 * Math.pow(conf, 0.7);
+        var c = pr >= 0.5 ? CLASS1 : CLASS0;
+        ctx.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + alpha.toFixed(3) + ")";
+        ctx.fillRect(gx * cell - 0.5, gy * cell - 0.5, cell + 1, cell + 1);
+      }
+    }
+
+    // scatter points (optionally subsampled for dense datasets)
+    var pts = data;
+    if (opts.maxPoints && data.length > opts.maxPoints) {
+      pts = data.slice(0, opts.maxPoints);
+    }
+    var rPt = Math.max(2.6, size * 0.014);
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      var px = toPx(p.x), py = toPx(p.y);
+      var col = p.label === 1 ? CLASS1 : CLASS0;
+      ctx.beginPath();
+      ctx.arc(px, py, rPt, 0, Math.PI * 2);
+      ctx.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(24,32,25,0.45)";
+      ctx.stroke();
+    }
+  }
+
+  // ---------- shared: matrix chain multiply (for S1-2's collapse proof) ----------
+  function matMulChain(matrices) {
+    var result = matrices[0];
+    for (var k = 1; k < matrices.length; k++) {
+      var A = matrices[k], B = result;
+      var out = A.length, mid = B.length, inn = B[0].length;
+      var C = [];
+      for (var o = 0; o < out; o++) {
+        var row = new Array(inn).fill(0);
+        for (var m = 0; m < mid; m++) {
+          var a = A[o][m];
+          if (a === 0) continue;
+          for (var i = 0; i < inn; i++) row[i] += a * B[m][i];
+        }
+        C.push(row);
+      }
+      result = C;
+    }
+    return result;
+  }
+
+  // ---------- shared: generic dense net, full-batch gradient descent ----------
+  // sizes e.g. [2,6,6,6,6,1]; activation 'identity' or 'relu' applied to every
+  // hidden layer (never the last, which is a raw logit fed to sigmoid outside).
+  function initDenseNet(sizes, seed, scaleFn) {
+    var rng = mulberry32(seed);
+    var rand = function () { return rng() * 2 - 1; };
+    var W = [], b = [];
+    for (var l = 0; l < sizes.length - 1; l++) {
+      var fanIn = sizes[l], fanOut = sizes[l + 1];
+      var scale = scaleFn(fanIn);
+      var Wl = [];
+      for (var o = 0; o < fanOut; o++) {
+        var row = [];
+        for (var i = 0; i < fanIn; i++) row.push(rand() * scale);
+        Wl.push(row);
+      }
+      W.push(Wl);
+      b.push(new Array(fanOut).fill(0));
+    }
+    return { W: W, b: b, sizes: sizes };
+  }
+
+  function denseForward(net, activation, x, y) {
+    var W = net.W, b = net.b, sizes = net.sizes, L = W.length;
+    var a = [x, y];
+    for (var l = 0; l < L; l++) {
+      var isLast = l === L - 1;
+      var fanOut = sizes[l + 1];
+      var z = new Array(fanOut);
+      for (var o = 0; o < fanOut; o++) {
+        var s = b[l][o];
+        for (var i = 0; i < a.length; i++) s += W[l][o][i] * a[i];
+        z[o] = s;
+      }
+      if (isLast) { a = z; }
+      else if (activation === 'relu') { a = z.map(function (v) { return v > 0 ? v : 0; }); }
+      else { a = z; }
+    }
+    return sigmoid(a[0]);
+  }
+
+  function trainDenseFullBatch(data, net, activation, epochs, lr) {
+    var W = net.W, b = net.b, sizes = net.sizes, L = W.length, n = data.length;
+    var mW = W.map(function (Wl) { return Wl.map(function (row) { return row.map(function () { return 0; }); }); });
+    var mb = b.map(function (bl) { return bl.map(function () { return 0; }); });
+    var beta = 0.9;
+
+    for (var e = 0; e < epochs; e++) {
+      var gW = W.map(function (Wl) { return Wl.map(function (row) { return row.map(function () { return 0; }); }); });
+      var gb = b.map(function (bl) { return bl.map(function () { return 0; }); });
+
+      for (var k = 0; k < n; k++) {
+        var p = data[k];
+        var acts = [[p.x, p.y]];
+        var raws = [];
+        var a = acts[0];
+        for (var l = 0; l < L; l++) {
+          var isLast = l === L - 1;
+          var fanOut = sizes[l + 1];
+          var z = new Array(fanOut);
+          for (var o = 0; o < fanOut; o++) {
+            var s = b[l][o];
+            for (var i = 0; i < a.length; i++) s += W[l][o][i] * a[i];
+            z[o] = s;
+          }
+          raws.push(z);
+          var out = isLast ? z : (activation === 'relu' ? z.map(function (v) { return v > 0 ? v : 0; }) : z);
+          acts.push(out); a = out;
+        }
+        var logit = acts[acts.length - 1][0];
+        var err = sigmoid(logit) - p.label;
+        var delta = [err];
+        for (var l2 = L - 1; l2 >= 0; l2--) {
+          var aIn = acts[l2], fanOut2 = sizes[l2 + 1];
+          for (var o2 = 0; o2 < fanOut2; o2++) {
+            gb[l2][o2] += delta[o2];
+            for (var i2 = 0; i2 < aIn.length; i2++) gW[l2][o2][i2] += delta[o2] * aIn[i2];
+          }
+          if (l2 > 0) {
+            var fanIn2 = sizes[l2];
+            var newDelta = new Array(fanIn2).fill(0);
+            for (var i3 = 0; i3 < fanIn2; i3++) {
+              var s2 = 0;
+              for (var o3 = 0; o3 < fanOut2; o3++) s2 += W[l2][o3][i3] * delta[o3];
+              if (activation === 'relu') {
+                var rawPrev = raws[l2 - 1][i3];
+                s2 = rawPrev > 0 ? s2 : 0;
+              }
+              newDelta[i3] = s2;
+            }
+            delta = newDelta;
+          }
+        }
+      }
+
+      for (var lu = 0; lu < L; lu++) {
+        for (var ou = 0; ou < W[lu].length; ou++) {
+          for (var iu = 0; iu < W[lu][ou].length; iu++) {
+            mW[lu][ou][iu] = beta * mW[lu][ou][iu] + (1 - beta) * (gW[lu][ou][iu] / n);
+            W[lu][ou][iu] -= lr * mW[lu][ou][iu];
+          }
+          mb[lu][ou] = beta * mb[lu][ou] + (1 - beta) * (gb[lu][ou] / n);
+          b[lu][ou] -= lr * mb[lu][ou];
+        }
+      }
+    }
+
+    var predict = function (x, y) { return denseForward(net, activation, x, y); };
+    var correct = 0;
+    for (var m = 0; m < n; m++) {
+      var pp = data[m];
+      if ((predict(pp.x, pp.y) >= 0.5 ? 1 : 0) === pp.label) correct++;
+    }
+    return { acc: correct / n, predict: predict, W: W, b: b };
+  }
+
+  // ---------- shared: generic dense net, mini-batch SGD (for larger n in S1-4) ----------
+  function trainDenseSGD(data, net, activation, totalSteps, batchSize, lr, seed) {
+    var W = net.W, b = net.b, sizes = net.sizes, L = W.length, n = data.length;
+    var rng = mulberry32(seed);
+    var mW = W.map(function (Wl) { return Wl.map(function (row) { return row.map(function () { return 0; }); }); });
+    var mb = b.map(function (bl) { return bl.map(function () { return 0; }); });
+    var beta = 0.9;
+    var bs = Math.min(batchSize, n);
+
+    for (var step = 0; step < totalSteps; step++) {
+      var gW = W.map(function (Wl) { return Wl.map(function (row) { return row.map(function () { return 0; }); }); });
+      var gb = b.map(function (bl) { return bl.map(function () { return 0; }); });
+      for (var s = 0; s < bs; s++) {
+        var p = data[Math.floor(rng() * n)];
+        var acts = [[p.x, p.y]];
+        var raws = [];
+        var a = acts[0];
+        for (var l = 0; l < L; l++) {
+          var isLast = l === L - 1;
+          var fanOut = sizes[l + 1];
+          var z = new Array(fanOut);
+          for (var o = 0; o < fanOut; o++) {
+            var sum = b[l][o];
+            for (var i = 0; i < a.length; i++) sum += W[l][o][i] * a[i];
+            z[o] = sum;
+          }
+          raws.push(z);
+          var out = isLast ? z : (activation === 'relu' ? z.map(function (v) { return v > 0 ? v : 0; }) : z);
+          acts.push(out); a = out;
+        }
+        var logit = acts[acts.length - 1][0];
+        var err = sigmoid(logit) - p.label;
+        var delta = [err];
+        for (var l2 = L - 1; l2 >= 0; l2--) {
+          var aIn = acts[l2], fanOut2 = sizes[l2 + 1];
+          for (var o2 = 0; o2 < fanOut2; o2++) {
+            gb[l2][o2] += delta[o2];
+            for (var i2 = 0; i2 < aIn.length; i2++) gW[l2][o2][i2] += delta[o2] * aIn[i2];
+          }
+          if (l2 > 0) {
+            var fanIn2 = sizes[l2];
+            var newDelta = new Array(fanIn2).fill(0);
+            for (var i3 = 0; i3 < fanIn2; i3++) {
+              var s2 = 0;
+              for (var o3 = 0; o3 < fanOut2; o3++) s2 += W[l2][o3][i3] * delta[o3];
+              if (activation === 'relu') {
+                var rawPrev = raws[l2 - 1][i3];
+                s2 = rawPrev > 0 ? s2 : 0;
+              }
+              newDelta[i3] = s2;
+            }
+            delta = newDelta;
+          }
+        }
+      }
+      for (var lu = 0; lu < L; lu++) {
+        for (var ou = 0; ou < W[lu].length; ou++) {
+          for (var iu = 0; iu < W[lu][ou].length; iu++) {
+            mW[lu][ou][iu] = beta * mW[lu][ou][iu] + (1 - beta) * (gW[lu][ou][iu] / bs);
+            W[lu][ou][iu] -= lr * mW[lu][ou][iu];
+          }
+          mb[lu][ou] = beta * mb[lu][ou] + (1 - beta) * (gb[lu][ou] / bs);
+          b[lu][ou] -= lr * mb[lu][ou];
+        }
+      }
+    }
+
+    var predict = function (x, y) { return denseForward(net, activation, x, y); };
+    function evalAcc(pts) {
+      var c = 0;
+      for (var i = 0; i < pts.length; i++) if ((predict(pts[i].x, pts[i].y) >= 0.5 ? 1 : 0) === pts[i].label) c++;
+      return c / pts.length;
+    }
+    return { predict: predict, evalAcc: evalAcc, W: W, b: b };
+  }
+
+  // ---------- orchestration ----------
+  var seed = 1;
+  var state = { data: null, linear: null, mlp: null };
+  var canvasLinear = document.getElementById("canvas-linear");
+  var canvasMlp = document.getElementById("canvas-mlp");
+  var accLinearEl = document.getElementById("acc-linear");
+  var accMlpEl = document.getElementById("acc-mlp");
+  var railLinearEl = document.getElementById("rail-acc-lin");
+  var railMlpEl = document.getElementById("rail-acc-mlp");
+  var seedNoteEl = document.getElementById("seed-note");
+  var retrainBtn = document.getElementById("retrain-btn");
+
+  function pct(v) { return (v * 100).toFixed(1) + "%"; }
+
+  function runAll() {
+    var data = makeData(seed);
+    var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+    var linear = trainLinear(data);
+    var mlp = trainMLP(data);
+    var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
+
+    state.data = data; state.linear = linear; state.mlp = mlp;
+
+    accLinearEl.textContent = pct(linear.acc);
+    accMlpEl.textContent = pct(mlp.acc);
+    railLinearEl.textContent = pct(linear.acc);
+    railMlpEl.textContent = pct(mlp.acc);
+    seedNoteEl.textContent = "seed #" + seed + " · trained in " + Math.round(t1 - t0) + "ms, in your browser";
+
+    drawPlot(canvasLinear, data, linear);
+    drawPlot(canvasMlp, data, mlp);
+  }
+
+  retrainBtn.addEventListener("click", function () {
+    seed = Math.floor(Math.random() * 1e6) + 2;
+    retrainBtn.disabled = true;
+    retrainBtn.textContent = "training…";
+    window.setTimeout(function () {
+      runAll();
+      retrainBtn.disabled = false;
+      retrainBtn.textContent = "↻ Regenerate rings & retrain";
+    }, 30);
+  });
+
+  // shared across all four tabs: each tab pushes a fn here once it has something to redraw
+  var redrawCallbacks = [];
+  redrawCallbacks.push(function () {
+    if (state.data) {
+      drawPlot(canvasLinear, state.data, state.linear);
+      drawPlot(canvasMlp, state.data, state.mlp);
+    }
+  });
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    if (resizeTimer) window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(function () {
+      redrawCallbacks.forEach(function (fn) { fn(); });
+    }, 120);
+  });
+
+  runAll();
+
+  // ===================================================================
+  // S1-2 · Depth without nonlinearity is a lie
+  // ===================================================================
+  (function () {
+    var s2seed = 1;
+    var s2state = { data: null, m1l: null, m5l: null, m5r: null };
+    var canvas1l = document.getElementById("s2-canvas-1l");
+    var canvas5l = document.getElementById("s2-canvas-5l");
+    var canvas5r = document.getElementById("s2-canvas-5r");
+    var acc1lEl = document.getElementById("s2-acc-1l");
+    var acc5lEl = document.getElementById("s2-acc-5l");
+    var acc5rEl = document.getElementById("s2-acc-5r");
+    var rail1lEl = document.getElementById("s2-rail-1l");
+    var rail5lEl = document.getElementById("s2-rail-5l");
+    var rail5rEl = document.getElementById("s2-rail-5r");
+    var seedNoteEl2 = document.getElementById("s2-seed-note");
+    var retrainBtn2 = document.getElementById("s2-retrain-btn");
+    var mat1lEl = document.getElementById("s2-mat-1l");
+    var mat5lEl = document.getElementById("s2-mat-5l");
+    var cosineEl = document.getElementById("s2-cosine");
+
+    function fmtVec(v) {
+      return '<span class="b">[</span> ' + v[0].toFixed(3) + '&nbsp;&nbsp;' + v[1].toFixed(3) + ' <span class="b">]</span>';
+    }
+
+    function redraw() {
+      if (!s2state.data) return;
+      drawPlot(canvas1l, s2state.data, s2state.m1l);
+      drawPlot(canvas5l, s2state.data, s2state.m5l);
+      drawPlot(canvas5r, s2state.data, s2state.m5r);
+    }
+    redrawCallbacks.push(redraw);
+
+    function runS2() {
+      var data = makeData(s2seed, 150);
+      var t0 = performance.now();
+
+      var net1 = initDenseNet([2, 1], s2seed + 100, function (fanIn) { return Math.sqrt(1 / fanIn); });
+      var m1l = trainDenseFullBatch(data, net1, 'identity', 400, 0.5);
+
+      var net5l = initDenseNet([2, 6, 6, 6, 6, 1], s2seed + 200, function (fanIn) { return Math.sqrt(1 / fanIn); });
+      var m5l = trainDenseFullBatch(data, net5l, 'identity', 700, 0.3);
+
+      var net5r = initDenseNet([2, 6, 6, 6, 6, 1], s2seed + 300, function (fanIn) { return Math.sqrt(2 / fanIn); });
+      var m5r = trainDenseFullBatch(data, net5r, 'relu', 700, 0.3);
+
+      var t1 = performance.now();
+
+      s2state.data = data; s2state.m1l = m1l; s2state.m5l = m5l; s2state.m5r = m5r;
+
+      acc1lEl.textContent = pct(m1l.acc);
+      acc5lEl.textContent = pct(m5l.acc);
+      acc5rEl.textContent = pct(m5r.acc);
+      rail1lEl.textContent = pct(m1l.acc);
+      rail5lEl.textContent = pct(m5l.acc);
+      rail5rEl.textContent = pct(m5r.acc);
+      seedNoteEl2.textContent = "seed #" + s2seed + " · trained in " + Math.round(t1 - t0) + "ms, in your browser";
+
+      var product = matMulChain(m5l.W); // W4·W3·W2·W1·W0 -> shape (1,2)
+      var w1v = m1l.W[0][0], w5v = product[0];
+      mat1lEl.innerHTML = fmtVec(w1v);
+      mat5lEl.innerHTML = fmtVec(w5v);
+      var dot = w1v[0] * w5v[0] + w1v[1] * w5v[1];
+      var n1 = Math.hypot(w1v[0], w1v[1]), n5 = Math.hypot(w5v[0], w5v[1]);
+      cosineEl.textContent = (dot / (n1 * n5)).toFixed(4);
+
+      redraw();
+    }
+
+    retrainBtn2.addEventListener("click", function () {
+      s2seed = Math.floor(Math.random() * 1e6) + 2;
+      retrainBtn2.disabled = true;
+      retrainBtn2.textContent = "training…";
+      window.setTimeout(function () {
+        runS2();
+        retrainBtn2.disabled = false;
+        retrainBtn2.textContent = "↻ Regenerate rings & retrain";
+      }, 30);
+    });
+
+    onFirstActivate["panel-2"] = runS2;
+  })();
+
+  // ===================================================================
+  // S1-3 · Embeddings learn similarity from nothing but next-token
+  // ===================================================================
+  (function () {
+    var ANIMALS = ['cat', 'dog', 'cow'];
+    var FRUITS = ['apple', 'mango'];
+    var VERBS = ['eat', 'chase', 'see'];
+    var VOCAB = ANIMALS.concat(FRUITS, VERBS, ['.']);
+    var IDX = {};
+    VOCAB.forEach(function (w, i) { IDX[w] = i; });
+    var CATEGORY = {};
+    ANIMALS.forEach(function (w) { CATEGORY[w] = 'animal'; });
+    FRUITS.forEach(function (w) { CATEGORY[w] = 'fruit'; });
+    VERBS.forEach(function (w) { CATEGORY[w] = 'verb'; });
+    CATEGORY['.'] = 'boundary';
+    var PLOT_VOCAB = VOCAB.filter(function (w) { return w !== '.'; });
+    var CAT_COLOR = { animal: '27,175,122', fruit: '237,161,0', verb: '74,58,167' };
+
+    var s3seed = 1;
+    var s3state = { E: null, coords: null };
+    var canvas3 = document.getElementById("s3-canvas");
+    var nnRail = document.getElementById("s3-rail-nn");
+    var seedNoteEl3 = document.getElementById("s3-seed-note");
+    var retrainBtn3 = document.getElementById("s3-retrain-btn");
+    var nnRowsEl = document.getElementById("s3-nn-rows");
+
+    function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+    function genSentence(rng) {
+      var subj = pick(rng, ANIMALS);
+      var verb = pick(rng, VERBS);
+      var obj;
+      if (verb === 'eat') obj = pick(rng, FRUITS);
+      else if (verb === 'chase') obj = pick(rng, ANIMALS);
+      else obj = rng() < 0.5 ? pick(rng, ANIMALS) : pick(rng, FRUITS);
+      return [subj, verb, obj];
+    }
+    function buildStreamPairs(seed, nSentences) {
+      var rng = mulberry32(seed);
+      var stream = [];
+      for (var i = 0; i < nSentences; i++) { stream = stream.concat(genSentence(rng)); stream.push('.'); }
+      var pairs = [];
+      for (var j = 0; j < stream.length - 1; j++) pairs.push([IDX[stream[j]], IDX[stream[j + 1]]]);
+      for (var k = pairs.length - 1; k > 0; k--) {
+        var m = Math.floor(rng() * (k + 1));
+        var tmp = pairs[k]; pairs[k] = pairs[m]; pairs[m] = tmp;
+      }
+      return pairs;
+    }
+    function softmax(logits) {
+      var mx = Math.max.apply(null, logits);
+      var exps = logits.map(function (v) { return Math.exp(v - mx); });
+      var s = exps.reduce(function (a, b) { return a + b; }, 0);
+      return exps.map(function (v) { return v / s; });
+    }
+    function trainEmbeddings(pairs, V, d, epochs, lr, seed) {
+      var rng = mulberry32(seed);
+      var rand = function () { return (rng() * 2 - 1) * 0.5; };
+      var E = [], Wout = [], bout = new Array(V).fill(0);
+      for (var t = 0; t < V; t++) {
+        var er = [], wr = [];
+        for (var k = 0; k < d; k++) { er.push(rand()); wr.push(rand()); }
+        E.push(er); Wout.push(wr);
+      }
+      var n = pairs.length;
+      var mE = E.map(function (r) { return r.map(function () { return 0; }); });
+      var mW = Wout.map(function (r) { return r.map(function () { return 0; }); });
+      var mb = new Array(V).fill(0);
+      var beta = 0.9;
+
+      for (var e = 0; e < epochs; e++) {
+        var gE = E.map(function (r) { return r.map(function () { return 0; }); });
+        var gW = Wout.map(function (r) { return r.map(function () { return 0; }); });
+        var gb = new Array(V).fill(0);
+        for (var pi = 0; pi < n; pi++) {
+          var cur = pairs[pi][0], next = pairs[pi][1];
+          var emb = E[cur];
+          var logits = new Array(V);
+          for (var v = 0; v < V; v++) {
+            var s = bout[v];
+            for (var k2 = 0; k2 < d; k2++) s += Wout[v][k2] * emb[k2];
+            logits[v] = s;
+          }
+          var probs = softmax(logits);
+          var dlogits = probs.slice();
+          dlogits[next] -= 1;
+          for (var v2 = 0; v2 < V; v2++) {
+            gb[v2] += dlogits[v2];
+            for (var k3 = 0; k3 < d; k3++) gW[v2][k3] += dlogits[v2] * emb[k3];
+          }
+          var dEmb = new Array(d).fill(0);
+          for (var k4 = 0; k4 < d; k4++) {
+            var s2 = 0;
+            for (var v3 = 0; v3 < V; v3++) s2 += Wout[v3][k4] * dlogits[v3];
+            dEmb[k4] = s2;
+          }
+          for (var k5 = 0; k5 < d; k5++) gE[cur][k5] += dEmb[k5];
+        }
+        for (var vv = 0; vv < V; vv++) {
+          for (var kk = 0; kk < d; kk++) {
+            mW[vv][kk] = beta * mW[vv][kk] + (1 - beta) * (gW[vv][kk] / n);
+            Wout[vv][kk] -= lr * mW[vv][kk];
+          }
+          mb[vv] = beta * mb[vv] + (1 - beta) * (gb[vv] / n);
+          bout[vv] -= lr * mb[vv];
+        }
+        for (var tt = 0; tt < V; tt++) {
+          for (var kkk = 0; kkk < d; kkk++) {
+            mE[tt][kkk] = beta * mE[tt][kkk] + (1 - beta) * (gE[tt][kkk] / n);
+            E[tt][kkk] -= lr * mE[tt][kkk];
+          }
+        }
+      }
+      return E;
+    }
+    function pca2(E) {
+      var n = E.length, d = E[0].length;
+      var mean = new Array(d).fill(0);
+      E.forEach(function (row) { for (var k = 0; k < d; k++) mean[k] += row[k] / n; });
+      var C = [];
+      for (var i = 0; i < d; i++) C.push(new Array(d).fill(0));
+      E.forEach(function (row) {
+        var c = row.map(function (v, k) { return v - mean[k]; });
+        for (var ii = 0; ii < d; ii++) for (var jj = 0; jj < d; jj++) C[ii][jj] += c[ii] * c[jj] / n;
+      });
+      function matVec(M, v) { return M.map(function (row) { return row.reduce(function (s, x, k) { return s + x * v[k]; }, 0); }); }
+      function norm(v) { return Math.sqrt(v.reduce(function (s, x) { return s + x * x; }, 0)); }
+      function powerIter(M, iters) {
+        iters = iters || 200;
+        var v = new Array(d).fill(0).map(function (_, i) { return Math.sin(i + 1); });
+        for (var it = 0; it < iters; it++) { v = matVec(M, v); var nv = norm(v); v = v.map(function (x) { return x / (nv || 1); }); }
+        var Mv = matVec(M, v);
+        var lambda = v.reduce(function (s, x, i) { return s + x * Mv[i]; }, 0);
+        return { v: v, lambda: lambda };
+      }
+      var p1 = powerIter(C);
+      var C2 = C.map(function (row, i) { return row.map(function (x, j) { return x - p1.lambda * p1.v[i] * p1.v[j]; }); });
+      var p2 = powerIter(C2);
+      return E.map(function (row) {
+        var c = row.map(function (v, k) { return v - mean[k]; });
+        return [
+          c.reduce(function (s, x, k) { return s + x * p1.v[k]; }, 0),
+          c.reduce(function (s, x, k) { return s + x * p2.v[k]; }, 0)
+        ];
+      });
+    }
+    function cosineSim(a, b) {
+      var dot = a.reduce(function (s, x, i) { return s + x * b[i]; }, 0);
+      var na = Math.sqrt(a.reduce(function (s, x) { return s + x * x; }, 0));
+      var nb = Math.sqrt(b.reduce(function (s, x) { return s + x * x; }, 0));
+      return dot / (na * nb);
+    }
+
+    function drawEmbedding(canvas, coords) {
+      var rect = canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      var w = Math.max(1, Math.round(rect.width)), h = Math.max(1, Math.round(rect.height));
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      var ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      var xs = PLOT_VOCAB.map(function (t) { return coords[IDX[t]][0]; });
+      var ys = PLOT_VOCAB.map(function (t) { return coords[IDX[t]][1]; });
+      var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+      var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+      var padX = (maxX - minX) * 0.28 + 0.3, padY = (maxY - minY) * 0.28 + 0.3;
+      minX -= padX; maxX += padX; minY -= padY; maxY += padY;
+      var rangeX = maxX - minX, rangeY = maxY - minY;
+
+      function toPx(x, y) {
+        return [ (x - minX) / rangeX * w, h - (y - minY) / rangeY * h ];
+      }
+
+      var dotXY = {};
+      PLOT_VOCAB.forEach(function (tok) {
+        var xy = toPx(coords[IDX[tok]][0], coords[IDX[tok]][1]);
+        dotXY[tok] = xy;
+        var col = CAT_COLOR[CATEGORY[tok]];
+        ctx.beginPath();
+        ctx.arc(xy[0], xy[1], 7, 0, Math.PI * 2);
+        ctx.fillStyle = "rgb(" + col + ")";
+        ctx.fill();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "rgba(24,32,25,0.35)";
+        ctx.stroke();
+      });
+
+      // labels drawn after all dots, with simple greedy de-collision so tight
+      // clusters (e.g. cat/dog/cow) don't render as illegible stacked text
+      ctx.font = "12px " + getComputedStyle(document.body).getPropertyValue('--mono').split(',')[0].trim() + ", monospace";
+      ctx.fillStyle = "rgba(24,32,25,0.88)";
+      ctx.textBaseline = "middle";
+      var placed = [];
+      var order = PLOT_VOCAB.slice().sort(function (a, b) { return dotXY[a][1] - dotXY[b][1]; });
+      order.forEach(function (tok) {
+        var xy = dotXY[tok];
+        var lw = tok.length * 6.6 + 6, lh = 15;
+        var lx = xy[0] + 11, ly = xy[1];
+        var tries = 0;
+        while (tries < 10) {
+          var overlap = placed.some(function (r) {
+            return lx < r.x + r.w && lx + lw > r.x && ly - lh / 2 < r.y + r.h / 2 && ly + lh / 2 > r.y - r.h / 2;
+          });
+          if (!overlap) break;
+          ly += lh;
+          tries++;
+        }
+        placed.push({ x: lx, y: ly, w: lw, h: lh });
+        ctx.fillText(tok, lx, ly);
+      });
+    }
+
+    function redraw3() {
+      if (s3state.coords) drawEmbedding(canvas3, s3state.coords);
+    }
+    redrawCallbacks.push(redraw3);
+
+    function runS3() {
+      var t0 = performance.now();
+      var pairs = buildStreamPairs(s3seed, 700);
+      var E = trainEmbeddings(pairs, VOCAB.length, 8, 600, 0.5, s3seed + 50);
+      var t1 = performance.now();
+      var coords = pca2(E);
+
+      s3state.E = E; s3state.coords = coords;
+
+      var hit = 0;
+      var rowsHtml = '';
+      PLOT_VOCAB.forEach(function (w) {
+        var i = IDX[w];
+        var best = -1, bestSim = -2;
+        PLOT_VOCAB.forEach(function (w2) {
+          var j = IDX[w2];
+          if (i === j) return;
+          var s = cosineSim(E[i], E[j]);
+          if (s > bestSim) { bestSim = s; best = j; }
+        });
+        var nbrWord = VOCAB[best];
+        var same = CATEGORY[nbrWord] === CATEGORY[w];
+        if (same) hit++;
+        rowsHtml += '<div class="nn-row"><span class="dot" style="background:rgb(' + CAT_COLOR[CATEGORY[w]] + ')"></span>' +
+          '<span class="tok">' + w + '</span><span class="arrow">&rarr;</span><span class="nbr">' + nbrWord + '</span>' +
+          '<span class="mark">' + (same ? '✓' : '') + '</span></div>';
+      });
+      nnRowsEl.innerHTML = rowsHtml;
+      nnRail.textContent = hit + "/" + PLOT_VOCAB.length;
+      seedNoteEl3.textContent = "seed #" + s3seed + " · " + pairs.length + " training pairs · trained in " + Math.round(t1 - t0) + "ms";
+
+      redraw3();
+    }
+
+    retrainBtn3.addEventListener("click", function () {
+      s3seed = Math.floor(Math.random() * 1e6) + 2;
+      retrainBtn3.disabled = true;
+      retrainBtn3.textContent = "training…";
+      window.setTimeout(function () {
+        runS3();
+        retrainBtn3.disabled = false;
+        retrainBtn3.textContent = "↻ Resample grammar & retrain";
+      }, 30);
+    });
+
+    onFirstActivate["panel-3"] = runS3;
+  })();
+
+  // ===================================================================
+  // S1-4 · Memorization vs generalization, and data closes the gap
+  // ===================================================================
+  (function () {
+    var S4_DOMAIN = 1.12;
+    var s4seed = 42;
+    var s4state = { runs: {} }; // n -> { train, test, model }
+    var sizesN = [20, 200, 2000];
+    var canvases = { 20: document.getElementById("s4-canvas-20"), 200: document.getElementById("s4-canvas-200"), 2000: document.getElementById("s4-canvas-2000") };
+    var accEls = { 20: document.getElementById("s4-acc-20"), 200: document.getElementById("s4-acc-200"), 2000: document.getElementById("s4-acc-2000") };
+    var gapRail20 = document.getElementById("s4-rail-gap20");
+    var gapRail2000 = document.getElementById("s4-rail-gap2000");
+    var seedNoteEl4 = document.getElementById("s4-seed-note");
+    var retrainBtn4 = document.getElementById("s4-retrain-btn");
+    var gapChartEl = document.getElementById("s4-gapchart");
+
+    function trueLabel(x, y) {
+      var s = Math.sin(1.8 * x + 0.6) + Math.sin(1.4 * y - 0.4) + 0.5 * Math.sin(2.2 * (x + y));
+      return s > 0 ? 1 : 0;
+    }
+    function makeSplit(seed, nTrain, nTest, noiseP) {
+      var rng = mulberry32(seed);
+      function sample(n) {
+        var pts = [];
+        for (var i = 0; i < n; i++) {
+          var x = (rng() * 2 - 1) * 3, y = (rng() * 2 - 1) * 3;
+          var label = trueLabel(x, y);
+          if (rng() < noiseP) label = 1 - label;
+          pts.push({ x: x / 3, y: y / 3, label: label });
+        }
+        return pts;
+      }
+      return { train: sample(nTrain), test: sample(nTest) };
+    }
+
+    function redraw4() {
+      sizesN.forEach(function (n) {
+        var r = s4state.runs[n];
+        if (r) drawPlot(canvases[n], r.train, r.model, { domain: S4_DOMAIN, gridN: 64, maxPoints: 180 });
+      });
+    }
+    redrawCallbacks.push(redraw4);
+
+    function buildGapChart() {
+      var html = '';
+      sizesN.forEach(function (n) {
+        html += '<div class="gap-group"><div class="gap-bars">' +
+          '<div class="gap-bar-col"><span class="gap-bar-val" id="s4-gv-train-' + n + '">–</span><div class="gap-bar train" id="s4-gb-train-' + n + '" style="height:2px"></div></div>' +
+          '<div class="gap-bar-col"><span class="gap-bar-val" id="s4-gv-test-' + n + '">–</span><div class="gap-bar test" id="s4-gb-test-' + n + '" style="height:2px"></div></div>' +
+          '</div><div class="gf"><span class="n-label">n=' + n + '</span><span class="gap-val" id="s4-gap-' + n + '">–</span></div></div>';
+      });
+      gapChartEl.innerHTML = html;
+    }
+    buildGapChart();
+
+    function runS4() {
+      var t0 = performance.now();
+      sizesN.forEach(function (n) {
+        var split = makeSplit(s4seed + n, n, 400, 0.12);
+        var net = initDenseNet([2, 32, 32, 1], 7, function (fanIn) { return Math.sqrt(2 / fanIn); });
+        var model = trainDenseSGD(split.train, net, 'relu', 3000, 32, 0.12, s4seed + n + 999);
+        var trainAcc = model.evalAcc(split.train);
+        var testAcc = model.evalAcc(split.test);
+        s4state.runs[n] = { train: split.train, test: split.test, model: model, trainAcc: trainAcc, testAcc: testAcc };
+
+        accEls[n].textContent = pct(trainAcc) + " / " + pct(testAcc);
+
+        var barH = 130;
+        document.getElementById("s4-gb-train-" + n).style.height = Math.max(2, trainAcc * barH) + "px";
+        document.getElementById("s4-gb-test-" + n).style.height = Math.max(2, testAcc * barH) + "px";
+        document.getElementById("s4-gv-train-" + n).textContent = pct(trainAcc);
+        document.getElementById("s4-gv-test-" + n).textContent = pct(testAcc);
+        var gapPP = (trainAcc - testAcc) * 100;
+        document.getElementById("s4-gap-" + n).textContent = "Δ" + gapPP.toFixed(1) + "pp";
+      });
+      var t1 = performance.now();
+
+      gapRail20.textContent = "Δ" + ((s4state.runs[20].trainAcc - s4state.runs[20].testAcc) * 100).toFixed(1) + "pp";
+      gapRail2000.textContent = "Δ" + ((s4state.runs[2000].trainAcc - s4state.runs[2000].testAcc) * 100).toFixed(1) + "pp";
+      seedNoteEl4.textContent = "seed #" + s4seed + " · trained in " + Math.round(t1 - t0) + "ms, in your browser";
+
+      redraw4();
+    }
+
+    retrainBtn4.addEventListener("click", function () {
+      s4seed = Math.floor(Math.random() * 1e6) + 2;
+      retrainBtn4.disabled = true;
+      retrainBtn4.textContent = "training…";
+      window.setTimeout(function () {
+        runS4();
+        retrainBtn4.disabled = false;
+        retrainBtn4.textContent = "↻ Resample data & retrain";
+      }, 30);
+    });
+
+    onFirstActivate["panel-4"] = runS4;
+  })();
+})();
+</script>
+</body>
+</html>
